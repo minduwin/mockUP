@@ -9,7 +9,6 @@ import { prisma } from './lib/prisma.js';
 import passport from 'passport';
 import 'dotenv/config';
 import mockRouter from './routes/mockRouter.js';
-import { mock } from 'node:test';
 
 const port = process.env.PORT || 3000;
 
@@ -22,6 +21,7 @@ app.set('view engine', 'ejs');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
+app.use('/uploads', express.static('uploads'));
 
 app.use(
     expressSession({

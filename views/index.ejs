@@ -22,6 +22,9 @@
     <div>
         <a href="/register">Register</a>
         <a href="/login">Login</a>
+        <% if (locals.user) { %>
+            <a href="/upload">Upload</a>
+        <% } %>
     </div>
 </body>
 </html>
