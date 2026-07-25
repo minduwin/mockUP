@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+</head>
+<body>
+    <a href="/uploads/">Back do All Folders</a>
+
+    <h1><%= folder.name %></h1>
+
+    <h3>Files in this Folder</h3>
+    <% if (folder.files && folder.files.length > 0) { %>
+        <ul>
+            <% folder.files.forEach(file => { %>
+                <li>
+                    📄 <strong><%= file.filename %></strong>
+                    — <a href="/<%= file.path %>" target="_blank" download>Download</a>
+
+                    <% if (file.filename.match(/\.(jpg|jpeg|png|gif|webp)$/i)) { %>
+                        <br>
+                        <img src="/<%= file.path %>" alt="<%= file.filename %>" style="max-width: 120px; height: auto; margin-top: 5px;">
+                    <% } %>
+                </li>
+            <% }) %>
+        </ul>
+    <% } else { %>
+        <p>This folder is currently empty!</p>
+    <% } %>
+
+    <h3>Upload File</h3>
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="folderId" value="<%= folder.id %>">
+        <input type="file" name="yourfile" required>
+        <button type="submit">Upload</button>
+    </form>
+</body>
+</html>

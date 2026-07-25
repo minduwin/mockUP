@@ -18,35 +18,77 @@
             <p>Please log in</p>
         <% } %>
     </div>
+    <br>
+    <!-- Create Folder -->
+    <form action="/createFolder" method="POST">
+        <input type="text" name="newFolder" id="newFolder" placeholder="New Folder Name" required>
+        <button type="submit">Add Folder</button>
+    </form>
+    <br>
+    <br>
 
+    <!-- Upload File into a selected Folder -->
     <form action="/upload" method="POST" enctype="multipart/form-data">
+        <label for="folderId">Select Folder:</label>
+        <select name="folderId" id="folderId">
+            <% folders.forEach(folder => { %>
+                <option value="<%= folder.id %>"><%= folder.name %></option>
+            <% }) %>
+        </select>
         <input type="file" name="yourfile" id="yourfile">
         <button type="submit">Upload File</button>
     </form>
 
     <h2>Your Uploaded Files</h2>
-    <% if (files && files.length > 0) { %>
+
+    <% if (folders && folders.length > 0) { %>
         <ul>
-            <% files.forEach(file => { %>
+            <% folders.forEach(folder => { %>
                 <li>
-                    <strong><%= file.filename %></strong>
-                    — <a href="/<%= file.path %>" target="_blank" download>Download</a>
-                    
-                    <!-- Preview if it's an image -->
-                    <% if (file.filename.match(/\.(jpg|jpeg|png|gif|webp)$/i)) { %>
-                        <br>
-                        <img src="/<%= file.path %>" alt="<%= file.filename %>" style="max-width: 70px; height: auto; margin-top: 5px;">
-                    <% } %>
+                    <strong><%= folder.name %></strong>
+                    <div class="openBtn" title="Open Folder">
+                        <a href="/folders/<%= folder.id %>">
+                            <button>Open</button>
+                        </a>
+                    </div>
+                    <div>
+                        <button type="button" onclick="toggleInput('<%= folder.id %>')">Edit</button>
+                        <form 
+                                action="/folders/<%= folder.id %>/update" 
+                                method="POST"
+                                id="editForm-<%= folder.id %>" 
+                                style="display: none;" 
+                            >
+                            <input type="text" name="name" value="<%= folder.name %>" required>
+                            <button>Save</button>
+                        </form>
+                    </div>
+                    <div>
+                        <form action="/folders/<%= folder.id %>/delete" method="POST">
+                            <button type="submit" onclick="return confirm('Are you sure?')">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
                 </li>
             <% }) %>
         </ul>
     <% } else { %>
-        <p>No files uploaded yet.</p>
+        <p>No folders created.</p>
     <% } %>
-
     <div>
         <a href="/">Home</a>
         <a href="/register">Register</a>
     </div>
+
+    <script>
+        function toggleInput(folderId) {
+            const targetForm = document.getElementById(`editForm-${folderId}`);
+            
+            if (targetForm){
+                targetForm.style.display = targetForm.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+    </script>
 </body>
 </html>
