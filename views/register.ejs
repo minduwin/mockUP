@@ -19,14 +19,24 @@
         <% } %>
     </div>
 
+    <div>
+        <% if (locals.errors && errors.length > 0) { %>
+            <ul style="color: red;">
+                <% errors.forEach(error => { %>
+                    <li><%= error.msg %></li>
+                <% }) %>
+            </ul>
+        <% } %>
+    </div>
+
     <form action="/register" method="POST">
         <label for="firstname">Name: </label>
-        <input type="text" id="firstname" name="firstname" required>
+        <input type="text" id="firstname" name="firstname" value="<%= locals.previousInput ? previousInput.name : '' %>" required>
         <label for="password">Password: </label>
         <input type="password" id="password" name="password" required>
         <label for="confirmPwd">Confirm Password: </label>
         <input type="password" id="confirmPwd" name="confirmPwd" required>
-        <button type="submit">Submit</button>
+        <button type="submit">Sign Up</button>
     </form>
 
     <div>

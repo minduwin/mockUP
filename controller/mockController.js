@@ -1,4 +1,4 @@
-import { body, matchedData } from 'express-validator';
+import { body, validationResult, matchedData } from 'express-validator';
 import { prisma } from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 import multer from 'multer';
@@ -23,11 +23,14 @@ const alphaErr = 'Must only contain  letters.';
 const lengthErr = 'Must be between 1 and 10 characters.';
 const pwdErr = 'Password must be at least 3 characters long.';
 
-const validateUser = [
-    body('firstname').trim()
+const validateSignup = [
+    body('firstname')
+        .trim()
+        .notEmpty().withMessage('Username is required.')
         .isAlpha().withMessage(`First name ${alphaErr}`)
         .isLength({ min: 1, max: 10 }).withMessage(`First name ${lengthErr}`),
     body('password')
+        .notEmpty().withMessage('Password is required.')
         .isLength({ min: 3 }).withMessage(`${pwdErr}`),
     body('confirmPwd').custom((value, { req }) => {
         if (value !== req.body.password) {
@@ -80,28 +83,56 @@ async function renderUpload(req, res) {
     });
 }
 
-async function newUser(req, res) {
-    const { firstname, password } = req.body;
+export const newUser = [
+    validateSignup, 
+    async (req, res) => {
+        // Check validation errors first
+        const errors = validationResult(req);
 
-    if (!firstname || !password) {
-        return res.status(400).send('Please fill all fields...');
-    }
+        if (!errors.isEmpty()) {
+            return res.status(400).render('register', {
+                title: 'Register',
+                errors: errors.array(),
+                // Keep entered name so users doesn't have to re-type it
+                previousInput: req.body
+            });
+        }
 
-    const hashedPwd = await bcrypt.hash(password, 10);
+        // Extract sanitized data
+        const { firstname, password } = req.body;
 
-    try {
-        const user = await prisma.user.create({
-            data: {
-                name: firstname,
-                password: hashedPwd
+        try {
+            // Check if username already exists in Prisma
+            const existingUser = await prisma.user.findUnique({
+                where: { firstname }
+            });
+
+            if (existingUser) {
+                return res.status(400).render('register', {
+                    title: 'Register',
+                    errors: [{ msg: 'Username is already taken.' }],
+                    previousInput: req.body
+                });
             }
-        });
-        res.redirect('/login');
-    } catch (error) {
-        console.error('Database error: ', error);
-        res.status(500).send('Something went wrong.');
+
+            // Hash password
+            const hashedPwd = await bcrypt.hash(password, 10);
+
+            // Create new user in database
+            await prisma.user.create({
+                data: {
+                    name,
+                    password: hashedPwd
+                }
+            });
+            res.redirect('/login');
+        } catch (error) {
+            console.error('Signup error: ', error);
+            res.status(500).send('Server error during registration.');
+        }
     }
-}
+];
+
 
 async function createFolder(req, res) {
     const { newFolder } = req.body;
@@ -285,6 +316,7 @@ export default {
     login,
     renderUpload,
     newUser,
+    uploadMiddleware,
     createFolder,
     uploadFile,
     openFolder,

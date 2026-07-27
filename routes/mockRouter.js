@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import mockController, { uploadMiddleware } from '../controller/mockController.js';
+import mockController from '../controller/mockController.js';
 import passport from '../config/passport.js';
 import { isAuth } from '../middleware/isAuth.js';
 
@@ -21,7 +21,7 @@ mockRouter.post('/login',
     })
 );
 mockRouter.post('/createFolder', isAuth, mockController.createFolder);
-mockRouter.post('/upload', isAuth, uploadMiddleware.single('yourfile'), mockController.uploadFile);
+mockRouter.post('/upload', isAuth, mockController.uploadMiddleware.single('yourfile'), mockController.uploadFile);
 
 mockRouter.post('/folders/:id/update', isAuth, mockController.updateFolder);
 mockRouter.post('/folders/:id/delete', isAuth, mockController.deleteFolder);
